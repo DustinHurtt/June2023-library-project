@@ -34,6 +34,85 @@ router.get('/details/:bookId', (req, res, next) => {
         })
 })
 
+router.get('/create', (req, res, next) => {
+    res.render('books/book-create.hbs')
+})
+
+router.post('/create', (req, res, next) => {
+
+    console.log(req.body);
+
+    const { title, author, description, rating } = req.body
+
+    Book.create(
+        { 
+        title, 
+        author, 
+        description,
+        rating 
+        }
+    )
+    .then((newBook) => {
+        console.log(`New book created: ${newBook.title}.`, newBook)
+        res.redirect('/books')
+    })
+    .catch((error) => {
+        console.log(err)
+        next(error)
+    });
+
+});
+
+router.get('/edit/:bookId', (req, res, next) => {
+    const { bookId } = req.params;
+   
+    Book.findById(bookId)
+      .then(bookToEdit => {
+        console.log(bookToEdit);
+        res.render('books/book-edit.hbs', bookToEdit)
+      })
+      .catch(error => {
+        console.log(err)
+        next(error)});
+  });
+
+router.post('/edit/:bookId', (req, res, next) => {
+
+    const { bookId } = req.params;
+    const { title, description, author, rating } = req.body;
+
+    Book.findByIdAndUpdate(
+        bookId, 
+        { 
+            title, 
+            description, 
+            author, 
+            rating 
+        }, 
+        { new: true }
+        )
+        .then((updatedBook) => {
+            console.log("Updated Book:", updatedBook)
+            res.redirect(`/books/details/${updatedBook._id}`)
+        }) // go to the details page to see the updates
+        .catch((err) => {
+            console.log(err)
+            next(err)});
+});
+
+router.get("/delete/:bookId", (req, res, next) => {
+
+    Book.findByIdAndDelete(req.params.bookId)
+        .then((result) => {
+            console.log("Deleted:", result)
+            res.redirect('/books')
+        })
+        .catch((err) => {
+            console.log(err)
+        })
+
+})
+
 
 
 module.exports = router;
